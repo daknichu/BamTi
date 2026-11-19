@@ -1,7 +1,7 @@
 // Screenshot matching adapted from Nightreign Seed Observer, commit 12c51ae.
 const BamTiRecognition = (() => {
   const state = {mapImageCache: new Map(), mapSignatureCache: new Map()};
-  const mapBackgrounds = {"Normal": "maps/Normal.webp", "Crater": "maps/Crater.webp", "Mountaintop": "maps/Mountaintop.webp", "Rotted": "maps/Rotted.webp", "Noklateo": "maps/Noklateo.webp", "Great Hollow": "maps/Hollow.webp"};
+  const mapBackgrounds = {"Normal": "./Normal.webp", "Crater": "./Crater.webp", "Mountaintop": "./Mountaintop.webp", "Rotted": "./Rotted.webp", "Noklateo": "./Noklateo.webp", "Great Hollow": "./Hollow.webp"};
   function imageFromPath(path) {
     if (state.mapImageCache.has(path)) return state.mapImageCache.get(path);
     const promise = new Promise((resolve, reject) => {
