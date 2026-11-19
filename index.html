@@ -10,7 +10,7 @@
 <meta name="description" content="엘든 링 밤의 통치자 밤비 타이머 및 맵 시드 기록 도우미">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.svg">
-<title>BamTi | 출격 도우미 0.2</title>
+<title>BamTi | 출격 도우미 0.3</title>
 <style>
 :root{--bg:#0b111a;--panel:#141b25;--panel2:#19232f;--border:#303b49;--gold:#e3c78e;--gold2:#bb985a;--light:#ecedea;--muted:#9ca9b5;--mint:#8ddbc7;--amber:#f4bf68;--rose:#f18c91;--r:17px}
 *{box-sizing:border-box} html{background:var(--bg)}body{margin:0;background:radial-gradient(ellipse at 50% -15%,#293041 0,transparent 49%),var(--bg);color:var(--light);font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;line-height:1.5} button,input,select{font:inherit} button{cursor:pointer} .wrap{max-width:560px;margin:0 auto;padding:25px 16px calc(90px + env(safe-area-inset-bottom))} .eyebrow{font-size:11px;font-weight:800;letter-spacing:.19em;color:var(--gold2)}h1{font-family:Georgia,'Times New Roman',serif;color:#f3e5c4;letter-spacing:-.04em;font-weight:600;margin:2px 0 4px;font-size:31px} .sub{color:var(--muted);font-size:12px;margin:0 0 24px}.bar{display:flex;justify-content:space-between;align-items:start;gap:10px}.version{border:1px solid #5c513c;border-radius:99px;padding:4px 8px;color:var(--gold);font-size:10px;white-space:nowrap}
@@ -20,11 +20,12 @@
 .croparea h3{font-size:13px;margin:0 0 6px;color:var(--gold)}.cropmeta{font-size:11px;color:#a7b4c0;margin-bottom:8px}.cropcanvas{width:100%;max-height:380px;object-fit:contain;border:1px solid #455668;border-radius:9px;background:#0a1118;display:none}
 .crop-controls{display:grid;grid-template-columns:1fr 1fr;gap:7px 11px;margin:12px 0}.crop-controls label{font-size:11px;color:#d8d3c4;display:flex;flex-wrap:wrap;justify-content:space-between;gap:3px}.crop-controls input{width:100%;accent-color:#dbba7d;min-width:0}
 .crop-buttons{display:flex;flex-wrap:wrap;gap:7px}.crop-buttons button,.crop-buttons a{font-size:12px;min-height:38px;padding:8px 11px;border-radius:9px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.outline{background:#263140;color:#d9e7e9;border:1px solid #4a5b6b}.crop-caption{font-size:11px;color:#a4b3be;line-height:1.55;margin:9px 0 0}
+.seed-map{position:relative;aspect-ratio:1;background-size:100% 100%;border-radius:10px;background-color:#111923}.seed-map button{position:absolute;transform:translate(-50%,-50%);border-radius:100%;border:1px solid #e1c593;background:#14202c;color:white;min-width:22px;height:22px;padding:0;font-size:11px}.seed-map button.marked{background:#356652}.seed-map button[aria-pressed=true]{outline:3px solid #efc779;z-index:1}#observed{margin-bottom:12px}#castleLookup{white-space:pre-line}
 </style>
 </head>
 <body>
 <main class="wrap">
- <header class="bar"><div><div class="eyebrow">LIMVELD / COMPANION</div><h1>밤의 통치자</h1><p class="sub">출격 보조 앱 · 밤비 타이머 & 맵 기록</p></div><span class="version">BamTi 0.2</span></header>
+ <header class="bar"><div><div class="eyebrow">LIMVELD / COMPANION</div><h1>밤의 통치자</h1><p class="sub">출격 보조 앱 · 밤비 타이머 & 맵 기록</p></div><span class="version">BamTi 0.3</span></header>
  <section class="card">
    <div class="topline"><div class="sect">◈ 출격 타이머</div><span class="state" id="runState">출격 대기</span></div>
    <div class="daytabs"><button class="daytab active" data-day="1">1일차</button><button class="daytab" data-day="2">2일차</button></div>
@@ -50,15 +51,23 @@
        <label for="cropW">잘라낼 너비 <span id="cropWNum">38.6%</span><input id="cropW" type="range" min="5" max="100" step="0.5" value="38.6"></label>
        <label for="cropH">잘라낼 높이 <span id="cropHNum">69.4%</span><input id="cropH" type="range" min="5" max="100" step="0.5" value="69.4"></label>
      </div>
-     <div class="crop-buttons"><button type="button" class="btn primary" id="downloadMap">추출된 지도 저장</button><a class="outline" href="https://stockholm754-source.github.io/nightreign-seed-observer/" target="_blank" rel="noopener">사진 시드 인식 도구 열기 ↗</a></div>
-     <p class="crop-caption">사진과 추출 이미지는 기기 안에서만 처리됩니다. 외부 인식 도구는 PS5 전체 화면 캡처를 그대로 읽도록 설계되어 있으므로, 먼저 원본 사진을 직접 선택하세요. 추출 이미지는 지도 확인·향후 개발용입니다.</p>
+     <div class="crop-buttons"><button type="button" class="btn primary" id="downloadMap">추출된 지도 저장</button><button class="outline" id="identify" disabled>이 지도로 시드 찾기</button></div>
+     <p class="crop-caption">지도 테두리에 맞춰 자른 뒤 분석하세요. 사진은 기기 안에서 처리됩니다.</p>
    </div>
-   <div class="notice">사진에서 지도 부분을 잘라낼 수 있습니다. 맵 시드 판별과 성채 정보 자동 조회는 아직 연결되지 않았으며, 확인되지 않은 시드를 추측해 표시하지 않습니다.</div>
-   <a class="link" href="https://nightreign-seed-finder.com/" target="_blank" rel="noopener">랜드마크로 시드 찾기 (외부 사이트) ↗</a>
+ </section>
+ <section class="card" id="finder"><div class="topline"><div class="sect">◈ 시드 식별</div><span class="pill">Seed Observer</span></div>
+   <p class="hint" id="analysisStatus" role="status">데이터를 불러오는 중입니다.</p>
+   <div class="two"><div class="field"><label for="mapType">지형</label><select id="mapType"></select></div><div class="field"><label for="lord">밤의 왕</label><select id="lord"></select></div></div>
+   <div class="seed-map" id="slotMap" aria-label="랜드마크 위치"></div>
+   <div class="two"><div class="field"><label for="slot">지도 지점</label><select id="slot"></select></div><div class="field"><label for="landmark">관측한 랜드마크</label><select id="landmark"></select></div></div>
+   <div id="observed" class="hint"></div>
+   <div class="topline"><strong id="matches" role="status"></strong><button class="small-btn" id="resetSearch">검색 초기화</button></div>
+   <button class="small-btn" id="useSeed" hidden></button>
    <div class="field"><label for="seed">확인한 맵 시드 번호 (선택)</label><input type="text" inputmode="numeric" id="seed" placeholder="예: 012 / 1054" maxlength="10"></div>
  </section>
  <section class="card"><div class="topline"><div class="sect">◈ 중앙 성채 정보</div><span class="pill" id="castleBadge">미확인</span></div>
-   <div class="field"><label for="guard">성채 수비 몬스터 유형</label><select id="guard"><option value="">아직 확인하지 않음</option><option value="항아리 트롤">항아리 트롤</option><option value="도가니 기사">도가니 기사</option><option value="땅 잃은 기사">땅 잃은 기사</option><option value="기타 / 확인 필요">기타 / 확인 필요</option><option value="중앙 성채 없음">중앙 성채 없음</option></select></div>
+   <p class="notice" id="castleLookup" role="status">시드 번호를 입력하면 성채 정보를 조회합니다.</p>
+   <div class="hint">내 성채 기록</div><div class="field"><label for="guard">성채 수비 몬스터 유형</label><select id="guard"><option value="">아직 확인하지 않음</option><option value="항아리 트롤">항아리 트롤</option><option value="도가니 기사">도가니 기사</option><option value="땅 잃은 기사">땅 잃은 기사</option><option value="기타 / 확인 필요">기타 / 확인 필요</option><option value="중앙 성채 없음">중앙 성채 없음</option></select></div>
    <div class="two"><div class="field"><label for="basement">지하 보스</label><input id="basement" placeholder="확인 후 입력"></div><div class="field"><label for="rooftop">옥상 보스</label><input id="rooftop" placeholder="확인 후 입력"></div></div>
    <div style="display:flex;align-items:center;justify-content:space-between;gap:9px"><div class="mini">수동 입력값은 이 기기에 저장됩니다.</div><button class="small-btn" id="clearCastle">기록 초기화</button></div>
  </section>
@@ -135,6 +144,7 @@ function setCrop(mode){
 }
 function renderCrop(){
  if(!loadedImage)return;cropFit();
+ document.dispatchEvent(new Event('bamti:crop'));
  const canvas=$('cropCanvas'),ctx=canvas.getContext('2d');
  const sx=Math.round(loadedImage.naturalWidth*crop.x),sy=Math.round(loadedImage.naturalHeight*crop.y);
  const sw=Math.max(1,Math.round(loadedImage.naturalWidth*crop.w)),sh=Math.max(1,Math.round(loadedImage.naturalHeight*crop.h));
@@ -169,10 +179,12 @@ $('downloadMap').onclick=()=>{
 };
 ['seed','guard','basement','rooftop'].forEach(k=>{$(k).value=state[k]||'';$(k).oninput=e=>{state[k]=e.target.value;save();updateBadge();};});
 function updateBadge(){$('castleBadge').textContent=state.guard||'미확인';}
-$('clearCastle').onclick=()=>{if(!confirm('시드 번호와 성채 기록을 초기화할까요?'))return;for(const k of ['seed','guard','basement','rooftop']){state[k]='';$(k).value='';}save();updateBadge();};
+$('clearCastle').onclick=()=>{if(!confirm('시드 번호와 성채 기록을 초기화할까요?'))return;for(const k of ['seed','guard','basement','rooftop']){state[k]='';$(k).value='';}save();updateBadge();$('seed').dispatchEvent(new Event('input'));};
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
 window.addEventListener('pageshow',render);document.addEventListener('visibilitychange',()=>{if(!document.hidden)render();});updateBadge();render();setInterval(render,250);
 })();
 </script>
+<script src="recognition.js"></script>
+<script src="finder.js"></script>
 </body>
 </html>

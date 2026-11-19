@@ -1,7 +1,7 @@
 {
   "name": "BamTi · 밤의 통치자 출격 도우미",
   "short_name": "BamTi",
-  "description": "밤비 타이머, PS5 지도 사진 자르기, 맵 시드·중앙성채 기록",
+  "description": "밤비 타이머, PS5 지도 사진 자르기, 사진 시드 식별 및 중앙 성채 조회",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
