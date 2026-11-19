@@ -56,14 +56,26 @@ async function getData(){
 async function identify(img){
  const data=await getData();
  const photo=prepareMapPhoto(img);
- let source=framedPanel(photo);
+ const alternatives=[];
+ let source=framedPanel(photo,alternatives);
  if(source===photo && Math.abs(img.naturalWidth/img.naturalHeight-16/9)<.055){
   source=document.createElement('canvas');source.width=512;source.height=512;
   source.getContext('2d').drawImage(img,img.width*.568,img.height*.16,img.width*.386,img.height*.694,0,0,512,512);
  }
  // A registered Limveld panel can be identified by its visible church glyphs
  // even when the terrain classifier is inconclusive.
- const icons=scanMapIcons(source,data.coords.baseSlots);
+ let icons=scanMapIcons(source,data.coords.baseSlots);
+ if(!icons.lord){
+  for(const alternative of alternatives){
+   const panel=alternative.make();
+   if(!scanMapIcons(panel,[]).lord)continue;
+   const retry=scanMapIcons(panel,data.coords.baseSlots);
+   const records=data.seeds.filter(s=>s.map!=='Great Hollow' && s.lord===retry.lord);
+   const slots=(retry.trio.length?retry.trio:retry.slots).filter(id=>records.some(s=>['church','church_spawn'].includes(s.slots[id])));
+   if(slots.length<2||!data.seeds.some(s=>s.map!=='Great Hollow' && s.lord===retry.lord && slots.every(id=>['church','church_spawn'].includes(s.slots[id]))))continue;
+   source=panel;icons=retry;break;
+  }
+ }
  if(icons.lord){
   const records=data.seeds.filter(s=>s.map!=='Great Hollow'&&s.lord===icons.lord);
   if(icons.trio.length && records.some(seed=>icons.trio.every(id=>['church','church_spawn'].includes(seed.slots[id])))){

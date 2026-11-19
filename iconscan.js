@@ -61,7 +61,7 @@ function prepareMapPhoto(image){
 }
 
 // Locate the thin, bright map frame by scoring continuous lines on each side.
-function framedPanel(image){
+function framedPanel(image, alternatives=[]){
  const w=image.naturalWidth||image.width,h=image.naturalHeight||image.height;
  if(w/h<.75||w/h>2.2)return image;
  const n=400,c=document.createElement('canvas');c.width=c.height=n;
@@ -89,8 +89,28 @@ function framedPanel(image){
  const sides=[edge(true,false),edge(true,true),edge(false,false),edge(false,true)];
  const [l,r,t,b]=sides.map(s=>s.at);
  const width=(r-l)*w/n,height=(b-t)*h/n;
+ function crop(x,y,cw,ch){
+  const out=document.createElement('canvas');out.width=out.height=512;
+  out.getContext('2d').drawImage(image,x,y,cw,ch,0,0,512,512);
+  return out;
+ }
+ const left=l*w/n,top=t*h/n;
+ // Infer a square from three sides when a faint border loses to the HUD.
+ const boxes=[
+  [left,top,width,[0,1,2]], [left,b*h/n-width,width,[0,1,3]],
+  [left,top,height,[0,2,3]], [r*w/n-height,top,height,[1,2,3]]
+ ];
+ for(const [x,y,size,edges] of boxes){
+  if(size<Math.min(w,h)*.45||x<0||y<0||x+size>w+1||y+size>h+1)continue;
+  const strength=Math.min(...edges.map(i=>sides[i].score));
+  if(strength>=2)alternatives.push({strength,make:()=>crop(x,y,size,size)});
+ }
+ alternatives.sort((a,b)=>b.strength-a.strength);
+ // Album crops often keep just a narrow margin around the game map.
+ if(w/h>.85 && w/h<1.12){
+  const size=.85*Math.min(w,h);
+  alternatives.push({make:()=>crop(w*.48-size/2,h*.475-size/2,size,size)});
+ }
  if(width<=0||height<=0||sides.some(s=>s.score<4)||Math.abs(width/height-1)>.08)return image;
- const out=document.createElement('canvas');out.width=out.height=512;
- out.getContext('2d').drawImage(image,l*w/n,t*h/n,width,height,0,0,512,512);
- return out;
+ return crop(left,top,width,height);
 }
