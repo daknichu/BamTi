@@ -53,6 +53,15 @@ async function getData(){
  database=await response.json();
  return database;
 }
+function matchTowers(pool,icons,coords){
+ if(pool.length<2||!icons.lord||icons.slots.length<2)return pool;
+ const found=coords.filter(p=>{
+  const count=pool.filter(seed=>seed.slots[p.id]==='sorcerers').length;
+  return count>0 && count<pool.length && icons.towerAt(p);
+ });
+ const matches=pool.filter(seed=>found.every(p=>seed.slots[p.id]==='sorcerers'));
+ return matches.length && matches.length<pool.length ? matches : pool;
+}
 async function identify(img){
  const data=await getData();
  const photo=prepareMapPhoto(img);
@@ -87,7 +96,8 @@ async function identify(img){
   const pool=data.seeds.filter(s=>s.map!=='Great Hollow'&&(!icons.lord||s.lord===icons.lord)&&icons.slots.every(id=>['church','church_spawn'].includes(s.slots[id])));
   if(pool.length && pool.every(s=>s.map===pool[0].map)){
    const map=pool[0].map;
-   return {...summary(pool),map,ids:pool.map(s=>s.id),filter:{map,lord:icons.lord,slots:icons.slots}};
+   const matches=matchTowers(pool,icons,data.coords.baseSlots);
+   return {towerMatched:matches!==pool,...summary(matches),map,ids:matches.map(s=>s.id),filter:{map,lord:icons.lord,slots:icons.slots}};
   }
  }
  let result=await BamTiRecognition.classifyMapScreenshot(source);
@@ -98,13 +108,14 @@ async function identify(img){
  if(!terrainPool.length)throw Error();
  const slots=map!=='Great Hollow'?icons.slots:[];
  const filtered=terrainPool.filter(s=>slots.every(id=>['church','church_spawn'].includes(s.slots[id])));
- const matches=filtered.length?filtered:terrainPool;
+ const base=filtered.length?filtered:terrainPool;
+ const matches=filtered.length && map!=='Great Hollow'?matchTowers(base,icons,data.coords.baseSlots):base;
  const resultSummary=summary(matches);
  if(!icons.lord && matches.length===1){
   resultSummary.uncertain=true;
   resultSummary.castle+='\n밤의 왕을 확인해 주세요.';
  }
- return {...resultSummary,map,ids:matches.map(s=>s.id),filter:{map,lord:icons.lord,slots:filtered.length?slots:[]}};
+ return {towerMatched:matches!==base,...resultSummary,map,ids:matches.map(s=>s.id),filter:{map,lord:icons.lord,slots:filtered.length?slots:[]}};
 }
 function summary(matches){
  if(!matches.length)return {castle:'일치하는 후보가 없습니다. 교회 위치나 밤의 왕을 수정하세요.',uncertain:true};
@@ -133,7 +144,7 @@ async function registerPhoto(e){
   if(session===active){
    if(result.filter){
     const f=result.filter;
-    result.observation=[terrainNames[f.map],f.lord?bossNames[parseInt(f.lord)-1]:'밤의 왕 미확인','교회 '+f.slots.length+'곳 인식'].join(' · ');
+    result.observation=[terrainNames[f.map],f.lord?bossNames[parseInt(f.lord)-1]:'밤의 왕 미확인','교회 '+f.slots.length+'곳 인식'].join(' · ')+(result.towerMatched?' · 마술사 탑 확인':'');
    }
    Object.assign(session,result);save();show();}
  }catch{$('error').textContent='사진을 읽을 수 없습니다. 다시 촬영해 주세요.';}
