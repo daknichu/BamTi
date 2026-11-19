@@ -3,7 +3,7 @@
   const el = id => document.getElementById(id);
   const maps = {Normal:'일반', Crater:'화구', Mountaintop:'산령', Rotted:'부패의 숲', Noklateo:'노크라테오', 'Great Hollow':'대공동'};
   const lords = ['글라디우스','에델레','그노스터','마리스','리브라','풀고르','칼리고','나멜레스','안녕을 가져오는 자들','잔해의 왕'];
-  const landmarks = {church:'교회',greatchurch:'대교회',fort:'요새',ruins:'폐허',forge:'대장장이 마을',mainencampment:'대형 야영지',marsh:'늪',EUF:'동부 구역',WUF:'서부 구역',sorcerers:'마술사탑',diff_sorcerers:'강화 마술사탑',township:'마을',ScaleBearingMerchant:'저울을 짊어진 상인',empty_spawn:'빈 착지점',church_spawn:'교회 착지점'};
+  const landmarks = {church:'성배병',greatchurch:'대교회',fort:'요새',ruins:'폐허',forge:'대장장이 마을',mainencampment:'대형 야영지',marsh:'늪',EUF:'동부 구역',WUF:'서부 구역',sorcerers:'마술사탑',diff_sorcerers:'강화 마술사탑',township:'마을',ScaleBearingMerchant:'저울을 짊어진 상인',empty_spawn:'빈 착지점',church_spawn:'성배병 착지점'};
   const effects = {fire:'화염',magic:'마력',eletric:'벼락',holy:'신성',sleep:'수면',poison:'독',blight:'죽음',bleed:'출혈',frostbite:'동상',rot:'부패',madness:'발광'};
   const names = {trolls:'항아리 트롤',banished_knights:'땅 잃은 기사',crucible_knights:'도가니 기사',royal_revenant:'왕족의 망령',black_knife_assassin:'검은 칼날의 자객',leonine_misbegotten:'사자 혼종',ancient_hero_of_zamor:'자미엘의 옛 영웅',bell_bearing_hunter:'방울 사냥꾼',red_wolf:'붉은 늑대',grafted_scion:'접목의 귀공자',royal_carian_knight:'카리아의 왕가 기사',death_rite_bird:'죽음 의례의 새',ulcerated_tree_spirit:'문드러진 나무령',tree_sentinel:'트리 가드',erdtree_avatar:'황금 나무의 화신',ancestor_spirit:'선조령',black_blade_kindred:'흑검의 권속',magma_wyrm:'용암토룡',draconic_tree_sentinel:'용의 트리 가드'};
   const present = '*', empty = '-';
