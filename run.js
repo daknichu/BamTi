@@ -60,6 +60,16 @@ async function identify(img){
   source=document.createElement('canvas');source.width=512;source.height=512;
   source.getContext('2d').drawImage(img,img.width*.568,img.height*.16,img.width*.386,img.height*.694,0,0,512,512);
  }
+ // A registered Limveld panel can be identified by its visible church glyphs
+ // even when the terrain classifier is inconclusive.
+ const icons=scanMapIcons(source,data.coords.baseSlots);
+ if(icons.slots.length>=2){
+  const pool=data.seeds.filter(s=>s.map!=='Great Hollow'&&(!icons.lord||s.lord===icons.lord)&&icons.slots.every(id=>['church','church_spawn'].includes(s.slots[id])));
+  if(pool.length && pool.every(s=>s.map===pool[0].map)){
+   const map=pool[0].map;
+   return {...summary(pool),map,ids:pool.map(s=>s.id),filter:{map,lord:icons.lord,slots:icons.slots}};
+  }
+ }
  let result=await BamTiRecognition.classifyMapScreenshot(source);
  if(source!==img && result.confidence<.34)result=await BamTiRecognition.classifyMapScreenshot(img);
  if(!result.best||result.confidence<.34||result.scores.length!==6)throw Error();
