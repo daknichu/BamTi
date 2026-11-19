@@ -33,21 +33,31 @@ function scanMapIcons(image,coords){
  const maris=locate(marisPattern,57,455,16,2);
  const bosses=[['1_Gladius',gladius],['4_Maris',maris],['3_Gnoster',locate(gnosterPattern,57,455,16,2)],['8_Heolstor',locate(heolstorPattern,57,455,16,2)],['6_Fulghor',locate(fulghorPattern,57,455,16,2)]].sort((a,b)=>b[1]-a[1]);
  const lord=bosses[0][1]>.78 && bosses[0][1]-bosses[1][1]>.08 ? bosses[0][0] : '';
- const slots=coords.filter(p=>locate(iconPatterns.church,Math.round(p.x*.512),Math.round(p.y*.512),16,1)>.60).map(p=>p.id);
- return {lord,slots};
+ const ranked=coords.map(p=>({
+  id:p.id,
+  score:locate(iconPatterns.church,Math.round(p.x*.512),Math.round(p.y*.512),16,1)
+ })).sort((a,b)=>b.score-a.score);
+ const slots=ranked.filter(p=>p.score>.60).map(p=>p.id);
+ // Camera blur can soften all three church glyphs. Require a clear gap
+ // above the fourth location, then check this trio against the seed data.
+ const trio=lord && ranked.length>=4 && slots.length>0 && slots.length<3
+  && ranked[2].score>.55 && ranked[2].score-ranked[3].score>.08
+  ? ranked.slice(0,3).map(p=>p.id) : [];
+ return {lord,slots,trio};
 }
 
 // Locate the thin, bright map frame by scoring continuous lines on each side.
 function framedPanel(image){
  const w=image.naturalWidth||image.width,h=image.naturalHeight||image.height;
- if(w/h<.75||w/h>1.3)return image;
+ if(w/h<.75||w/h>1.6)return image;
  const n=400,c=document.createElement('canvas');c.width=c.height=n;
  const ctx=c.getContext('2d');ctx.drawImage(image,0,0,n,n);
  const pix=ctx.getImageData(0,0,n,n).data;
  function edge(vertical,far){
   let peak=0,at=0;
   const light=(i,j)=>{const k=4*(vertical?j*n+i:i*n+j);return (pix[k]+2*pix[k+1]+pix[k+2])/4;};
-  for(let d=2;d<n*.22;d++){
+  const margin=vertical && w/h>1.3 ? 1-h/w+.10 : .22;
+  for(let d=2;d<n*margin;d++){
    const i=far?n-1-d:d;
    let score=0;
    for(let j=88;j<312;j+=2){

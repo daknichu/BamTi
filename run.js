@@ -55,7 +55,7 @@ async function getData(){
 }
 async function identify(img){
  const data=await getData();
- let source=img;
+ let source=framedPanel(img);
  if(Math.abs(img.naturalWidth/img.naturalHeight-16/9)<.055){
   source=document.createElement('canvas');source.width=512;source.height=512;
   source.getContext('2d').drawImage(img,img.width*.568,img.height*.16,img.width*.386,img.height*.694,0,0,512,512);
@@ -63,7 +63,14 @@ async function identify(img){
  // A registered Limveld panel can be identified by its visible church glyphs
  // even when the terrain classifier is inconclusive.
  const icons=scanMapIcons(source,data.coords.baseSlots);
- if(icons.slots.length>=2){
+ if(icons.lord){
+  const records=data.seeds.filter(s=>s.map!=='Great Hollow'&&s.lord===icons.lord);
+  if(icons.trio.length && records.some(seed=>icons.trio.every(id=>['church','church_spawn'].includes(seed.slots[id])))){
+   icons.slots=icons.trio;
+  }
+  icons.slots=icons.slots.filter(id=>records.some(s=>['church','church_spawn'].includes(s.slots[id])));
+ }
+ if(icons.lord && icons.slots.length>=2){
   const pool=data.seeds.filter(s=>s.map!=='Great Hollow'&&(!icons.lord||s.lord===icons.lord)&&icons.slots.every(id=>['church','church_spawn'].includes(s.slots[id])));
   if(pool.length && pool.every(s=>s.map===pool[0].map)){
    const map=pool[0].map;
@@ -74,15 +81,17 @@ async function identify(img){
  if(source!==img && result.confidence<.34)result=await BamTiRecognition.classifyMapScreenshot(img);
  if(!result.best||result.confidence<.34||result.scores.length!==6)throw Error();
  const map=result.best.mapType;
- const coords=data.coords[map==='Great Hollow'?'greatHollowSlots':'baseSlots'];
- const evidence=BamTiRecognition.analyzeScreenshot(result.canvas,coords,result.best);
- const points=evidence.points.filter(p=>p.score>=.78).slice(0,6);
- let matches=data.seeds.filter(s=>s.map===map);
- for(const p of points){
-  const subset=matches.filter(s=>s.slots[p.id]);
-  if(subset.length)matches=subset;
+ const terrainPool=data.seeds.filter(s=>s.map===map&&(!icons.lord||s.lord===icons.lord));
+ if(!terrainPool.length)throw Error();
+ const slots=map!=='Great Hollow'?icons.slots:[];
+ const filtered=terrainPool.filter(s=>slots.every(id=>['church','church_spawn'].includes(s.slots[id])));
+ const matches=filtered.length?filtered:terrainPool;
+ const resultSummary=summary(matches);
+ if(!icons.lord && matches.length===1){
+  resultSummary.uncertain=true;
+  resultSummary.castle+='\n밤의 왕을 확인해 주세요.';
  }
- return {...summary(matches),map,ids:matches.map(s=>s.id)};
+ return {...resultSummary,map,ids:matches.map(s=>s.id),filter:{map,lord:icons.lord,slots:filtered.length?slots:[]}};
 }
 function summary(matches){
  if(!matches.length)return {castle:'일치하는 후보가 없습니다. 교회 위치나 밤의 왕을 수정하세요.',uncertain:true};
