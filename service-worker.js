@@ -1,4 +1,4 @@
-const CACHE = 'bamti-v041';
+const CACHE = 'bamti-v042';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon.svg',
   './details.html','./run.js','./recognition.js', './finder.js', './seeds.json',
   ...['Normal','Crater','Mountaintop','Rotted','Noklateo','Hollow'].map(m => './'+m+'.webp')];
