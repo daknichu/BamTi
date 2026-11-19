@@ -28,7 +28,7 @@ function save(){
 }
 function show(){
  $('home').hidden=!!session;$('run').hidden=!session;
- if(session){$('castle').textContent=session.castle;$('manual').hidden=!session.uncertain;tick();}
+ if(session){$('evidence').textContent=session.observation||'';$('castle').textContent=session.castle;$('manual').hidden=!session.uncertain;tick();}
 }
 function tick(){
  if(!session)return;
@@ -55,8 +55,9 @@ async function getData(){
 }
 async function identify(img){
  const data=await getData();
- let source=framedPanel(img);
- if(Math.abs(img.naturalWidth/img.naturalHeight-16/9)<.055){
+ const photo=prepareMapPhoto(img);
+ let source=framedPanel(photo);
+ if(source===photo && Math.abs(img.naturalWidth/img.naturalHeight-16/9)<.055){
   source=document.createElement('canvas');source.width=512;source.height=512;
   source.getContext('2d').drawImage(img,img.width*.568,img.height*.16,img.width*.386,img.height*.694,0,0,512,512);
  }
@@ -117,7 +118,12 @@ async function registerPhoto(e){
   const active={start,castle:'시드 식별 중…',uncertain:false};session=active;lastSecond=0;save();show();
   let result;
   try{result=await identify(img);}catch{result={castle:'사진에서 시드를 확인하기 어렵습니다.',uncertain:true};}
-  if(session===active){Object.assign(session,result);save();show();}
+  if(session===active){
+   if(result.filter){
+    const f=result.filter;
+    result.observation=[terrainNames[f.map],f.lord?bossNames[parseInt(f.lord)-1]:'밤의 왕 미확인','교회 '+f.slots.length+'곳 인식'].join(' · ');
+   }
+   Object.assign(session,result);save();show();}
  }catch{$('error').textContent='사진을 읽을 수 없습니다. 다시 촬영해 주세요.';}
  finally{if($('error').textContent==='사진 확인 중…')$('error').textContent='';URL.revokeObjectURL(url);$('camera').disabled=$('photo').disabled=false;$('camera').value=$('photo').value='';}
 };

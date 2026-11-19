@@ -46,32 +46,49 @@ function scanMapIcons(image,coords){
  return {lord,slots,trio};
 }
 
+// Reduce large camera images in stages so thin frame lines survive downsampling.
+function prepareMapPhoto(image){
+ let source=image;
+ let w=image.naturalWidth||image.width,h=image.naturalHeight||image.height;
+ while(Math.max(w,h)>1600){
+  w=Math.round(w/2);h=Math.round(h/2);
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  const ctx=c.getContext('2d');ctx.imageSmoothingQuality='high';
+  ctx.drawImage(source,0,0,w,h);source=c;
+ }
+ return source;
+}
+
 // Locate the thin, bright map frame by scoring continuous lines on each side.
 function framedPanel(image){
  const w=image.naturalWidth||image.width,h=image.naturalHeight||image.height;
- if(w/h<.75||w/h>1.6)return image;
+ if(w/h<.75||w/h>2.2)return image;
  const n=400,c=document.createElement('canvas');c.width=c.height=n;
- const ctx=c.getContext('2d');ctx.drawImage(image,0,0,n,n);
+ const ctx=c.getContext('2d');ctx.imageSmoothingQuality='high';ctx.drawImage(image,0,0,n,n);
  const pix=ctx.getImageData(0,0,n,n).data;
  function edge(vertical,far){
   let peak=0,at=0;
   const light=(i,j)=>{const k=4*(vertical?j*n+i:i*n+j);return (pix[k]+2*pix[k+1]+pix[k+2])/4;};
-  const margin=vertical && w/h>1.3 ? 1-h/w+.10 : .22;
+  const margin=vertical && w/h>1.3 ? Math.min(.68,1-h/w+.12) : .22;
   for(let d=2;d<n*margin;d++){
    const i=far?n-1-d:d;
-   let score=0;
-   for(let j=88;j<312;j+=2){
-    const ridge=light(i,j)-(light(i-2,j)+light(i+2,j))/2;
-    score+=Math.min(30,Math.max(-10,ridge));
+   for(const tilt of [0,-.025,.025,-.05,.05]){
+    let score=0;
+    for(let j=88;j<312;j+=2){
+     const k=i+Math.round((j-n/2)*tilt);
+     if(k<2||k>=n-2)continue;
+     const ridge=light(k,j)-(light(k-2,j)+light(k+2,j))/2;
+     score+=Math.min(30,Math.max(-10,ridge));
+    }
+    if(score>peak){peak=score;at=i;}
    }
-   if(score>peak){peak=score;at=i;}
   }
   return {at,score:peak/112};
  }
  const sides=[edge(true,false),edge(true,true),edge(false,false),edge(false,true)];
  const [l,r,t,b]=sides.map(s=>s.at);
  const width=(r-l)*w/n,height=(b-t)*h/n;
- if(sides.some(s=>s.score<4)||Math.abs(width/height-1)>.08)return image;
+ if(width<=0||height<=0||sides.some(s=>s.score<4)||Math.abs(width/height-1)>.08)return image;
  const out=document.createElement('canvas');out.width=out.height=512;
  out.getContext('2d').drawImage(image,l*w/n,t*h/n,width,height,0,0,512,512);
  return out;
