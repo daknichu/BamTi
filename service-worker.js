@@ -1,6 +1,6 @@
-const CACHE = 'bamti-v049';
+const CACHE = 'bamti-v0411';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon.svg',
-  './details.html','./run.js?v=049','./iconscan.js?v=049','./recognition.js?v=049', './finder.js', './seeds.json',
+  './details.html','./run.js?v=0411','./iconscan.js?v=0411','./recognition.js?v=0411', './finder.js', './seeds.json',
   ...['Normal','Crater','Mountaintop','Rotted','Noklateo','Hollow'].map(m => './'+m+'.webp')];
 self.addEventListener('install', event => event.waitUntil(
   caches.open(CACHE).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting())
