@@ -1,2 +1,1 @@
-// Set to the deployed Worker endpoint, for example https://bamti-metrics.example.workers.dev/events.
-const analyticsEndpoint = '';
+const analyticsEndpoint = 'https://bamti-metrics-nas.jeongmin-choi.workers.dev/events';

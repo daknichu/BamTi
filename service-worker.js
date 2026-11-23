@@ -1,4 +1,4 @@
-const CACHE = 'bamti-v0430';
+const CACHE = 'bamti-v0430-connected';
 const CORE = ['./', './index.html', './manifest.webmanifest', './restage-full-180.png','./restage-full-192.png','./restage-full-512.png','./night-sky.webp',
   './details.html','./run-v0430.js','./analytics-config.js','./analytics-v0430.js','./boss-pronunciation-v0427.js','./iconscan-v0425.js','./recognition.js?v=0413', './finder.js', './seeds.json',
   ...['Normal','Crater','Mountaintop','Rotted','Noklateo','Hollow'].map(m => './'+m+'.webp')];
