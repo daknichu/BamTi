@@ -154,7 +154,7 @@ const BamTiRecognition = (() => {
     return views;
   }
 
-  async function classifyMapScreenshot(image) {
+  async function classifyMapScreenshot(image, { registered = false } = {}) {
     const screenshotCandidates = screenshotCropCandidates(image).map((candidate) => ({
       ...candidate,
       signature: imageSignature(candidate.canvas),
@@ -173,7 +173,7 @@ const BamTiRecognition = (() => {
           }
           for (const screenshot of screenshotCandidates) {
             const rawDistance = signatureDistance(screenshot.signature, signature);
-            const variantPenalty = mapType !== "Normal" && mapType !== "Great Hollow" ? 0.025 : 0;
+            const variantPenalty = !registered && mapType !== "Normal" && mapType !== "Great Hollow" ? 0.025 : 0;
             const weakHollowPenalty = mapType === "Great Hollow"
               && screenshot.crop.centerX !== 0.5
               && rawDistance > 0.22
