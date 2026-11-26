@@ -1,6 +1,6 @@
-const CACHE = 'bamti-v0433';
+const CACHE = 'bamti-v0434';
 const CORE = ['./', './index.html', './manifest.webmanifest', './restage-full-180.png','./restage-full-192.png','./restage-full-512.png','./night-sky.webp',
-  './details.html','./run-v0433.js','./analytics-config.js','./analytics-v0433.js','./boss-pronunciation-v0427.js','./iconscan-v0433.js','./recognition.js?v=0431', './finder.js', './seeds.json',
+  './details.html','./run-v0434.js','./analytics-config.js','./analytics-v0434.js','./boss-pronunciation-v0427.js','./iconscan-v0434.js','./recognition.js?v=0431', './finder.js', './seeds.json',
   ...['Normal','Crater','Mountaintop','Rotted','Noklateo','Hollow'].map(m => './'+m+'.webp')];
 self.addEventListener('install', event => event.waitUntil(
   caches.open(CACHE).then(cache => cache.addAll(CORE.map(path => new Request(path, {cache: 'reload'})))).then(() => self.skipWaiting())
